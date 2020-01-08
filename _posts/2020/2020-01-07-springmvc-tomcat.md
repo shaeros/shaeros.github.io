@@ -316,3 +316,33 @@ public class MvcContainer {
 
 ![](https://shaeros.github.io/assets/images/2020/spring/request.png)
 
+一个请求过来，会先走HttpServlet的service方法，然后判断get或者post请求，从而走doGet或者doPost方法。
+
+springmvc中也一样，FrameworkServlet继承了HttpServlet的service、doGet和doPost方法。
+
+doGet和doPost中会调用processRequest方法，processRequest方法中会调用DispatcherServlet的doService方法（实现了FrameworkServlet），最终会走到核心流程doDispatch方法。
+
+```java
+protected void service(HttpServletRequest request, HttpServletResponse response)
+    throws ServletException, IOException {
+
+  HttpMethod httpMethod = HttpMethod.resolve(request.getMethod());
+  if (httpMethod == HttpMethod.PATCH || httpMethod == null) {
+    processRequest(request, response);
+  }
+  else {
+    super.service(request, response);
+  }
+}
+protected final void doGet(HttpServletRequest request, HttpServletResponse response)
+  throws ServletException, IOException {
+
+processRequest(request, response);
+}
+protected final void doPost(HttpServletRequest request, HttpServletResponse response)
+  throws ServletException, IOException {
+
+processRequest(request, response);
+}
+```
+
