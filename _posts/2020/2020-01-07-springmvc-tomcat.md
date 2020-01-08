@@ -140,10 +140,128 @@ public interface WebApplicationInitializer {
 
 ![](https://shaeros.github.io/assets/images/2020/spring/webappinitializer.png)
 
-我们写一个类来实现这个接口
+AbstractContextLoaderInitializer类的onStartup方法创建listener
+
+```java
+@Override
+public void onStartup(ServletContext servletContext) throws ServletException {
+  registerContextLoaderListener(servletContext);
+}
+```
+
+```java
+protected void registerContextLoaderListener(ServletContext servletContext) {
+
+  //创建spring上下文，注册了SpringContainer
+  WebApplicationContext rootAppContext = createRootApplicationContext();
+  if (rootAppContext != null) {
+    //创建监听器
+    /*
+      形如这种配置
+    * <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+      <!--<listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>-->
+      </listener>
+    *
+    * */
+    ContextLoaderListener listener = new ContextLoaderListener(rootAppContext);
+    listener.setContextInitializers(getRootApplicationContextInitializers());
+    servletContext.addListener(listener);
+  }
+  else {
+    logger.debug("No ContextLoaderListener registered, as " +
+        "createRootApplicationContext() did not return an application context");
+  }
+}
+```
+
+AbstractDispatcherServletInitializer类的onStartup创建servlet
+
+```java
+@Override
+public void onStartup(ServletContext servletContext) throws ServletException {
+  super.onStartup(servletContext);
+  //注册DispatcherServlet
+  registerDispatcherServlet(servletContext);
+}
+```
+
+```java
+protected void registerDispatcherServlet(ServletContext servletContext) {
+  String servletName = getServletName();
+  Assert.hasLength(servletName, "getServletName() must not return null or empty");
+
+  //创建springmvc的上下文，注册了MvcContainer类
+  WebApplicationContext servletAppContext = createServletApplicationContext();
+  Assert.notNull(servletAppContext, "createServletApplicationContext() must not return null");
+
+  //创建DispatcherServlet
+  FrameworkServlet dispatcherServlet = createDispatcherServlet(servletAppContext);
+  Assert.notNull(dispatcherServlet, "createDispatcherServlet(WebApplicationContext) must not return null");
+  dispatcherServlet.setContextInitializers(getServletApplicationContextInitializers());
+
+  ServletRegistration.Dynamic registration = servletContext.addServlet(servletName, dispatcherServlet);
+  if (registration == null) {
+    throw new IllegalStateException("Failed to register servlet with name '" + servletName + "'. " +
+        "Check if there is another servlet registered under the same name.");
+  }
+
+  /*
+  * 如果该元素的值为负数或者没有设置，则容器会当Servlet被请求时再加载。
+    如果值为正整数或者0时，表示容器在应用启动时就加载并初始化这个servlet，
+    值越小，servlet的优先级越高，就越先被加载
+  * */
+  registration.setLoadOnStartup(1);
+  registration.addMapping(getServletMappings());
+  registration.setAsyncSupported(isAsyncSupported());
+
+  Filter[] filters = getServletFilters();
+  if (!ObjectUtils.isEmpty(filters)) {
+    for (Filter filter : filters) {
+      registerServletFilter(servletContext, filter);
+    }
+  }
+
+  customizeRegistration(registration);
+}
+```
+
+以上就是springmvc替代web.xml的过程
+
+## 3、springmvc和spring的关系
+
+创建listener和servlet过程中，会创建spring容器，分别对应方法中的createRootApplicationContext()和createServletApplicationContext()
+
+```java
+protected WebApplicationContext createRootApplicationContext() {
+  Class<?>[] configClasses = getRootConfigClasses();
+  if (!ObjectUtils.isEmpty(configClasses)) {
+    AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+    context.register(configClasses);
+    return context;
+  }
+  else {
+    return null;
+  }
+}
+```
+
+```java
+protected WebApplicationContext createServletApplicationContext() {
+  AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+  Class<?>[] configClasses = getServletConfigClasses();
+  if (!ObjectUtils.isEmpty(configClasses)) {
+    context.register(configClasses);
+  }
+  return context;
+}
+```
+
+getRootConfigClasses()和getServletConfigClasses()分别来自于自定义的子类
 
 ```java
 public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
+
   //父容器
   @Override
   protected Class<?>[] getRootConfigClasses() {
@@ -169,6 +287,32 @@ public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServlet
 }
 ```
 
-## 3、springmvc和spring的关系
+```java
+//不扫描有@Controller注解的类
+@ComponentScan(value = "com.xiangxue.jack",excludeFilters = {
+      @ComponentScan.Filter(type = FilterType.ANNOTATION,classes = {Controller.class})
+})
+public class SpringContainer {
+}
+```
+
+```java
+@ComponentScan(value = "com.xiangxue.jack",includeFilters = {
+      @ComponentScan.Filter(type = FilterType.ANNOTATION,classes = {Controller.class})
+},useDefaultFilters = false)
+public class MvcContainer {
+}
+```
+
+通过AnnotationConfigWebApplicationContext类注册扫描的类来创建spring容器
+
+此时，只是初始化容器，但并没有走核心流程refresh来创建bean实例
+
+1、listener中是通过把容器上下文放入到ContextLoaderListener中，从而调用initWebApplicationContext方法来调用refresh()
+
+2、servlet中是创建DispatcherServlet放入容器上下文，然后在servlet的init方法中调用initServletBean()方法，
+
+initServletBean()方法中调用initWebApplicationContext()来调用refresh()
 
 ## 4、请求响应核心流程图解
+
