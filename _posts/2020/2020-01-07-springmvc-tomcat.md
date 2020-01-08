@@ -49,7 +49,7 @@ web.xml和spring.xml都不需要，xml配置的方式，都是通过读取xml里
 </servlet-mapping>
 ```
 
-通过spi查找META-INF/services/javax.servlet.ServletContainerInitializer 实现这个接口的类并加载
+替代的方法是通过spi查找META-INF/services/javax.servlet.ServletContainerInitializer 实现这个接口的类并加载
 
 ```java
 @HandlesTypes(LoadServlet.class)
@@ -310,9 +310,7 @@ public class MvcContainer {
 
 1、listener中是通过把容器上下文放入到ContextLoaderListener中，从而调用initWebApplicationContext方法来调用refresh()
 
-2、servlet中是创建DispatcherServlet放入容器上下文，然后在servlet的init方法中调用initServletBean()方法，
-
-initServletBean()方法中调用initWebApplicationContext()来调用refresh()
+2、servlet中是创建DispatcherServlet放入容器上下文，然后在servlet的init方法中调用initServletBean()方法，initServletBean()方法中调用initWebApplicationContext()来调用refresh()
 
 ## 4、请求响应核心流程图解
 
