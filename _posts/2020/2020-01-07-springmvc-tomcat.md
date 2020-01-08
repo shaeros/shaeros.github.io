@@ -308,9 +308,11 @@ public class MvcContainer {
 
 此时，只是初始化容器，但并没有走核心流程refresh来创建bean实例
 
-1、listener中是通过把容器上下文放入到ContextLoaderListener中，从而调用initWebApplicationContext方法来调用refresh()
+1、listener中是通过把容器上下文放入到ContextLoaderListener中，从而调用initWebApplicationContext方法来调用refresh()，由listener创建的容器是父容器。
 
-2、servlet中是创建DispatcherServlet放入容器上下文，然后在servlet的init方法中调用initServletBean()方法，initServletBean()方法中调用initWebApplicationContext()来调用refresh()
+2、servlet中是创建DispatcherServlet放入容器上下文，然后在servlet的init方法中调用initServletBean()方法，initServletBean()方法中调用initWebApplicationContext()来调用refresh()，由servlet创建的容器是子容器。
 
 ## 4、请求响应核心流程图解
+
+![](https://shaeros.github.io/assets/images/2020/spring/request.png)
 
