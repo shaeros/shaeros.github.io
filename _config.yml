@@ -62,7 +62,7 @@ navs:
     label: Home
 
   -
-    href: /spring-boot
+    href: /blog
     label: Spring Boot
     target: _self
 
