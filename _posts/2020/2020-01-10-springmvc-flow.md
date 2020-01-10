@@ -13,7 +13,7 @@ keywords: springmvc
 
 其实用一个@EnableWebMvc就可以完全取代xml，其实两者完成的工作是一样的， 都是为了创建必要组件的实例
 
-```JAVA
+```java
 @Configuration
 @EnableWebMvc
 public class AppConfig extends WebMvcConfigurerAdapter {
