@@ -5,8 +5,8 @@ titlebar: spring-boot
 subtitle: <span class="mega-octicon octicon-cloud-download"></span>&nbsp;&nbsp;springboot
 menu: spring-boot
 css: ['blog-page.css']
-permalink: /spring-boot.html
+permalink: /boot
 keywords: Spring Boot 学习
 ---
 
-{% include spring-boot.html %}
+{% include boot.html %}
