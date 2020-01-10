@@ -62,8 +62,9 @@ navs:
     label: Home
 
   -
-    href: /open-source
-    label: Open-Source
+    href: /spring-boot.html
+    label: Spring Boot
+    target: _self
 
   -
     href: /blog
