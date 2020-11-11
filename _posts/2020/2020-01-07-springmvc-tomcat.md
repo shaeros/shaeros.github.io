@@ -138,7 +138,7 @@ public interface WebApplicationInitializer {
 }
 ```
 
-![](https://shaeros.github.io/assets/images/2020/spring/webappinitializer.png)
+![](https://pinapple.gitee.io/assets/images/2020/spring/webappinitializer.png)
 
 AbstractContextLoaderInitializer类的onStartup方法创建listener
 
@@ -314,7 +314,7 @@ public class MvcContainer {
 
 ## 4、请求响应核心流程图解
 
-![](https://shaeros.github.io/assets/images/2020/spring/request.png)
+![](https://pinapple.gitee.io/assets/images/2020/spring/request.png)
 
 一个请求过来，会先走HttpServlet的service方法，然后判断get或者post请求，从而走doGet或者doPost方法。
 

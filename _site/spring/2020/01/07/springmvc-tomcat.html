@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Favicon Icon -->
+    <link rel="shortcut icon" type="image/x-icon" href="/assets/images/favicon.png">
+
+    <title>零xml配置整合springmvc和嵌入式tomcat</title>
+    <meta name="description"
+          content="零配置揭秘">
+
+    <link rel="canonical" href="https://pinapple.gitee.io/spring/2020/01/07/springmvc-tomcat.html">
+    <link rel="alternate" type="application/rss+xml" title="Saber" href="https://pinapple.gitee.io/feed.xml">
+
+    <script type="text/javascript" src="/bower_components/jquery/dist/jquery.min.js"></script>
+
+    <!-- Third-Party CSS -->
+    <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/bower_components/octicons/octicons/octicons.css">
+    <link rel="stylesheet" href="/bower_components/hover/css/hover-min.css">
+    <link rel="stylesheet" href="/bower_components/primer-markdown/dist/user-content.min.css">
+    <link rel="stylesheet" href="/assets/css/syntax.css">
+
+    <!-- My CSS -->
+    <link rel="stylesheet" href="/assets/css/common.css">
+
+    <!-- CSS set in page -->
+    
+
+    <!-- CSS set in layout -->
+    
+    <link rel="stylesheet" href="/assets/css/sidebar-post-nav.css">
+    
+
+    <script type="text/javascript" src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+
+</head>
+
+
+    <body>
+
+    <header class="site-header">
+    <div class="container">
+        <a id="site-header-brand" href="/" title="Saber">
+            <span class="octicon octicon-mark-github"></span> Saber
+        </a>
+        <nav class="site-header-nav" role="navigation">
+            
+            <a href="/"
+               class=" site-header-nav-item hvr-underline-from-center"
+               target=""
+               title="Home">
+                Home
+            </a>
+            
+            <a href="/boot"
+               class=" site-header-nav-item hvr-underline-from-center"
+               target="_self"
+               title="Spring Boot">
+                Spring Boot
+            </a>
+            
+            <a href="/cloud"
+               class=" site-header-nav-item hvr-underline-from-center"
+               target=""
+               title="Spring Cloud">
+                Spring Cloud
+            </a>
+            
+            <a href="/bookmark"
+               class=" site-header-nav-item hvr-underline-from-center"
+               target=""
+               title="Bookmark">
+                Bookmark
+            </a>
+            
+            <a href="/blog"
+               class=" site-header-nav-item hvr-underline-from-center"
+               target=""
+               title="Blog">
+                Blog
+            </a>
+            
+            <a href="/archives.html"
+               class=" site-header-nav-item hvr-underline-from-center"
+               target="_self"
+               title="Archives">
+                Archives
+            </a>
+            
+        </nav>
+    </div>
+</header>
+
+
+        <div class="content">
+            <section class="jumbotron geopattern" data-pattern-id="零xml配置整合springmvc和嵌入式tomcat">
+    <div class="container">
+        <div id="jumbotron-meta-info">
+            <h1>零xml配置整合springmvc和嵌入式tomcat</h1>
+            <span class="meta-info">
+                
+                
+                <span class="octicon octicon-calendar"></span> 2020/01/07
+                
+            </span>
+        </div>
+    </div>
+</section>
+<script>
+    $(document).ready(function(){
+
+        $('.geopattern').each(function(){
+            $(this).geopattern($(this).data('pattern-id'));
+        });
+
+    });
+</script>
+<article class="post container" itemscope itemtype="http://schema.org/BlogPosting">
+
+    <div class="row">
+
+        
+        <div class="col-md-8 markdown-body">
+
+            <h1 id="xmlspringmvctomcat">零xml配置整合springmvc和嵌入式tomcat</h1>
+
+<h2 id="webxml">1、怎么替代web.xml</h2>
+
+<p>web.xml和spring.xml都不需要，xml配置的方式，都是通过读取xml里面的配置封装成对象</p>
+
+<p>原始的web.xml配置会加载两个spring容器</p>
+
+<p>一个通过listener</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nt">&lt;context-param&gt;</span>
+  <span class="nt">&lt;param-name&gt;</span>contextConfigLocation<span class="nt">&lt;/param-name&gt;</span>
+  <span class="nt">&lt;param-value&gt;</span>
+    <span class="c">&lt;!--加载spring配置--&gt;</span>
+    classpath:spring.xml
+  <span class="nt">&lt;/param-value&gt;</span>
+<span class="nt">&lt;/context-param&gt;</span>
+<span class="nt">&lt;listener&gt;</span>
+  <span class="nt">&lt;listener-class&gt;</span>org.springframework.web.context.ContextLoaderListener<span class="nt">&lt;/listener-class&gt;</span>
+<span class="nt">&lt;/listener&gt;</span>
+</code></pre>
+</div>
+
+<p>一个通过servlet</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nt">&lt;servlet&gt;</span>
+  <span class="nt">&lt;servlet-name&gt;</span>spring-dispatcher<span class="nt">&lt;/servlet-name&gt;</span>
+  <span class="nt">&lt;servlet-class&gt;</span>org.springframework.web.servlet.DispatcherServlet<span class="nt">&lt;/servlet-class&gt;</span>
+  <span class="nt">&lt;init-param&gt;</span>
+    <span class="c">&lt;!--springmvc的配置文件--&gt;</span>
+    <span class="nt">&lt;param-name&gt;</span>contextConfigLocation<span class="nt">&lt;/param-name&gt;</span>
+    <span class="nt">&lt;param-value&gt;</span>classpath:spring-dispatcher.xml<span class="nt">&lt;/param-value&gt;</span>
+  <span class="nt">&lt;/init-param&gt;</span>
+  <span class="nt">&lt;load-on-startup&gt;</span>0<span class="nt">&lt;/load-on-startup&gt;</span>
+<span class="nt">&lt;/servlet&gt;</span>
+<span class="nt">&lt;servlet-mapping&gt;</span>
+  <span class="nt">&lt;servlet-name&gt;</span>spring-dispatcher<span class="nt">&lt;/servlet-name&gt;</span>
+  <span class="nt">&lt;url-pattern&gt;</span>/<span class="nt">&lt;/url-pattern&gt;</span>
+<span class="nt">&lt;/servlet-mapping&gt;</span>
+</code></pre>
+</div>
+
+<p>替代的方法是通过spi查找META-INF/services/javax.servlet.ServletContainerInitializer 实现这个接口的类并加载</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nd">@HandlesTypes</span><span class="o">(</span><span class="n">LoadServlet</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyServletContainerInitializer</span> <span class="kd">implements</span> <span class="n">ServletContainerInitializer</span> <span class="o">{</span>
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="n">onStartup</span><span class="o">(</span><span class="n">Set</span><span class="o">&lt;</span><span class="n">Class</span><span class="o">&lt;?&gt;&gt;</span> <span class="n">set</span><span class="o">,</span> <span class="n">ServletContext</span> <span class="n">servletContext</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">ServletException</span> <span class="o">{</span>
+      <span class="n">Iterator</span> <span class="n">var4</span><span class="o">;</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">set</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+          <span class="n">var4</span> <span class="o">=</span> <span class="n">set</span><span class="o">.</span><span class="na">iterator</span><span class="o">();</span>
+          <span class="k">while</span> <span class="o">(</span><span class="n">var4</span><span class="o">.</span><span class="na">hasNext</span><span class="o">())</span> <span class="o">{</span>
+              <span class="n">Class</span><span class="o">&lt;?&gt;</span> <span class="n">clazz</span> <span class="o">=</span> <span class="o">(</span><span class="n">Class</span><span class="o">&lt;?&gt;)</span> <span class="n">var4</span><span class="o">.</span><span class="na">next</span><span class="o">();</span>
+              <span class="k">if</span> <span class="o">(!</span><span class="n">clazz</span><span class="o">.</span><span class="na">isInterface</span><span class="o">()</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">Modifier</span><span class="o">.</span><span class="na">isAbstract</span><span class="o">(</span><span class="n">clazz</span><span class="o">.</span><span class="na">getModifiers</span><span class="o">())</span> <span class="o">&amp;&amp;</span> <span class="n">LoadServlet</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">isAssignableFrom</span><span class="o">(</span><span class="n">clazz</span><span class="o">))</span> <span class="o">{</span>
+                  <span class="k">try</span> <span class="o">{</span>
+                      <span class="o">((</span><span class="n">LoadServlet</span><span class="o">)</span> <span class="n">clazz</span><span class="o">.</span><span class="na">newInstance</span><span class="o">()).</span><span class="na">loadOnStartup</span><span class="o">(</span><span class="n">servletContext</span><span class="o">);</span>
+                  <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+                      <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+                  <span class="o">}</span>
+              <span class="o">}</span>
+          <span class="o">}</span>
+      <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p>这个注解@HandlesTypes会找到所有实现LoadServlet接口的类并放入Set集合，接着实例化并调用loadOnStartup方法</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">LoadServlet</span> <span class="o">{</span>
+   <span class="kt">void</span> <span class="n">loadOnStartup</span><span class="o">(</span><span class="n">ServletContext</span> <span class="n">servletContext</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">LoadServletImpl</span> <span class="kd">implements</span> <span class="n">LoadServlet</span> <span class="o">{</span>
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="n">loadOnStartup</span><span class="o">(</span><span class="n">ServletContext</span> <span class="n">servletContext</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">ServletRegistration</span><span class="o">.</span><span class="na">Dynamic</span> <span class="n">initServlet</span> <span class="o">=</span> <span class="n">servletContext</span><span class="o">.</span><span class="na">addServlet</span><span class="o">(</span><span class="s">"initServlet"</span><span class="o">,</span> <span class="s">"com.xiangxue.jack.servlet.InitServlet"</span><span class="o">);</span>
+      <span class="n">initServlet</span><span class="o">.</span><span class="na">setLoadOnStartup</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
+      <span class="n">initServlet</span><span class="o">.</span><span class="na">addMapping</span><span class="o">(</span><span class="s">"/init"</span><span class="o">);</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p>这个实现类里面同样定义了servlet、loadOnStartup、mapping，和web.xml如出一辙</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">InitServlet</span> <span class="kd">extends</span> <span class="n">HttpServlet</span> <span class="o">{</span>
+  <span class="nd">@Override</span>
+  <span class="kd">protected</span> <span class="kt">void</span> <span class="n">doGet</span><span class="o">(</span><span class="n">HttpServletRequest</span> <span class="n">req</span><span class="o">,</span> <span class="n">HttpServletResponse</span> <span class="n">resp</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">ServletException</span><span class="o">,</span> <span class="n">IOException</span> <span class="o">{</span>
+      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"=====doget==="</span><span class="o">);</span>
+      <span class="n">PrintWriter</span> <span class="n">writer</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="na">getWriter</span><span class="o">();</span>
+      <span class="n">writer</span><span class="o">.</span><span class="na">print</span><span class="o">(</span><span class="s">"&lt;h1&gt;Jack&lt;/h1&gt;"</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">protected</span> <span class="kt">void</span> <span class="n">doPost</span><span class="o">(</span><span class="n">HttpServletRequest</span> <span class="n">req</span><span class="o">,</span> <span class="n">HttpServletResponse</span> <span class="n">resp</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">ServletException</span><span class="o">,</span> <span class="n">IOException</span> <span class="o">{</span>
+      <span class="kd">super</span><span class="o">.</span><span class="na">doPost</span><span class="o">(</span><span class="n">req</span><span class="o">,</span> <span class="n">resp</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="n">init</span><span class="o">(</span><span class="n">ServletConfig</span> <span class="n">config</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">ServletException</span> <span class="o">{</span>
+      <span class="kd">super</span><span class="o">.</span><span class="na">init</span><span class="o">(</span><span class="n">config</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">protected</span> <span class="kt">void</span> <span class="n">service</span><span class="o">(</span><span class="n">HttpServletRequest</span> <span class="n">req</span><span class="o">,</span> <span class="n">HttpServletResponse</span> <span class="n">resp</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">ServletException</span><span class="o">,</span> <span class="n">IOException</span> <span class="o">{</span>
+      <span class="kd">super</span><span class="o">.</span><span class="na">service</span><span class="o">(</span><span class="n">req</span><span class="o">,</span> <span class="n">resp</span><span class="o">);</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p>同样，springmvc也同样是这样处理的。</p>
+
+<h2 id="tomcatspringmvc">2、嵌入式tomcat加载springmvc</h2>
+
+<p>同样也会在spring中spring-web-5.1.3.RELEASE.jar这个包中的META-INF/serivces/javax.servlet.ServletContainerInitializer文件中找到org.springframework.web.SpringServletContainerInitializer这个类</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nd">@HandlesTypes</span><span class="o">(</span><span class="n">WebApplicationInitializer</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">SpringServletContainerInitializer</span> <span class="kd">implements</span> <span class="n">ServletContainerInitializer</span>
+</code></pre>
+</div>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">WebApplicationInitializer</span> <span class="o">{</span>
+	<span class="kt">void</span> <span class="n">onStartup</span><span class="o">(</span><span class="n">ServletContext</span> <span class="n">servletContext</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">ServletException</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p><img src="https://pinapple.gitee.io/assets/images/2020/spring/webappinitializer.png" alt="" /></p>
+
+<p>AbstractContextLoaderInitializer类的onStartup方法创建listener</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nd">@Override</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">onStartup</span><span class="p">(</span><span class="n">ServletContext</span> <span class="n">servletContext</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">ServletException</span> <span class="o">{</span>
+  <span class="n">registerContextLoaderListener</span><span class="o">(</span><span class="n">servletContext</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="kd">protected</span> <span class="kt">void</span> <span class="nf">registerContextLoaderListener</span><span class="p">(</span><span class="n">ServletContext</span> <span class="n">servletContext</span><span class="o">)</span> <span class="o">{</span>
+
+  <span class="c1">//创建spring上下文，注册了SpringContainer</span>
+  <span class="n">WebApplicationContext</span> <span class="n">rootAppContext</span> <span class="o">=</span> <span class="n">createRootApplicationContext</span><span class="o">();</span>
+  <span class="k">if</span> <span class="o">(</span><span class="n">rootAppContext</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+    <span class="c1">//创建监听器</span>
+    <span class="cm">/*
+      形如这种配置
+    * &lt;listener&gt;
+        &lt;listener-class&gt;org.springframework.web.context.ContextLoaderListener&lt;/listener-class&gt;
+      &lt;!--&lt;listener-class&gt;org.springframework.web.context.request.RequestContextListener&lt;/listener-class&gt;--&gt;
+      &lt;/listener&gt;
+    *
+    * */</span>
+    <span class="n">ContextLoaderListener</span> <span class="n">listener</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ContextLoaderListener</span><span class="o">(</span><span class="n">rootAppContext</span><span class="o">);</span>
+    <span class="n">listener</span><span class="o">.</span><span class="na">setContextInitializers</span><span class="o">(</span><span class="n">getRootApplicationContextInitializers</span><span class="o">());</span>
+    <span class="n">servletContext</span><span class="o">.</span><span class="na">addListener</span><span class="o">(</span><span class="n">listener</span><span class="o">);</span>
+  <span class="o">}</span>
+  <span class="k">else</span> <span class="o">{</span>
+    <span class="n">logger</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">"No ContextLoaderListener registered, as "</span> <span class="o">+</span>
+        <span class="s">"createRootApplicationContext() did not return an application context"</span><span class="o">);</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p>AbstractDispatcherServletInitializer类的onStartup创建servlet</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nd">@Override</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">onStartup</span><span class="p">(</span><span class="n">ServletContext</span> <span class="n">servletContext</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">ServletException</span> <span class="o">{</span>
+  <span class="kd">super</span><span class="o">.</span><span class="na">onStartup</span><span class="o">(</span><span class="n">servletContext</span><span class="o">);</span>
+  <span class="c1">//注册DispatcherServlet</span>
+  <span class="n">registerDispatcherServlet</span><span class="o">(</span><span class="n">servletContext</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="kd">protected</span> <span class="kt">void</span> <span class="nf">registerDispatcherServlet</span><span class="p">(</span><span class="n">ServletContext</span> <span class="n">servletContext</span><span class="o">)</span> <span class="o">{</span>
+  <span class="n">String</span> <span class="n">servletName</span> <span class="o">=</span> <span class="n">getServletName</span><span class="o">();</span>
+  <span class="n">Assert</span><span class="o">.</span><span class="na">hasLength</span><span class="o">(</span><span class="n">servletName</span><span class="o">,</span> <span class="s">"getServletName() must not return null or empty"</span><span class="o">);</span>
+
+  <span class="c1">//创建springmvc的上下文，注册了MvcContainer类</span>
+  <span class="n">WebApplicationContext</span> <span class="n">servletAppContext</span> <span class="o">=</span> <span class="n">createServletApplicationContext</span><span class="o">();</span>
+  <span class="n">Assert</span><span class="o">.</span><span class="na">notNull</span><span class="o">(</span><span class="n">servletAppContext</span><span class="o">,</span> <span class="s">"createServletApplicationContext() must not return null"</span><span class="o">);</span>
+
+  <span class="c1">//创建DispatcherServlet</span>
+  <span class="n">FrameworkServlet</span> <span class="n">dispatcherServlet</span> <span class="o">=</span> <span class="n">createDispatcherServlet</span><span class="o">(</span><span class="n">servletAppContext</span><span class="o">);</span>
+  <span class="n">Assert</span><span class="o">.</span><span class="na">notNull</span><span class="o">(</span><span class="n">dispatcherServlet</span><span class="o">,</span> <span class="s">"createDispatcherServlet(WebApplicationContext) must not return null"</span><span class="o">);</span>
+  <span class="n">dispatcherServlet</span><span class="o">.</span><span class="na">setContextInitializers</span><span class="o">(</span><span class="n">getServletApplicationContextInitializers</span><span class="o">());</span>
+
+  <span class="n">ServletRegistration</span><span class="o">.</span><span class="na">Dynamic</span> <span class="n">registration</span> <span class="o">=</span> <span class="n">servletContext</span><span class="o">.</span><span class="na">addServlet</span><span class="o">(</span><span class="n">servletName</span><span class="o">,</span> <span class="n">dispatcherServlet</span><span class="o">);</span>
+  <span class="k">if</span> <span class="o">(</span><span class="n">registration</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">throw</span> <span class="k">new</span> <span class="n">IllegalStateException</span><span class="o">(</span><span class="s">"Failed to register servlet with name '"</span> <span class="o">+</span> <span class="n">servletName</span> <span class="o">+</span> <span class="s">"'. "</span> <span class="o">+</span>
+        <span class="s">"Check if there is another servlet registered under the same name."</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="cm">/*
+  * 如果该元素的值为负数或者没有设置，则容器会当Servlet被请求时再加载。
+    如果值为正整数或者0时，表示容器在应用启动时就加载并初始化这个servlet，
+    值越小，servlet的优先级越高，就越先被加载
+  * */</span>
+  <span class="n">registration</span><span class="o">.</span><span class="na">setLoadOnStartup</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
+  <span class="n">registration</span><span class="o">.</span><span class="na">addMapping</span><span class="o">(</span><span class="n">getServletMappings</span><span class="o">());</span>
+  <span class="n">registration</span><span class="o">.</span><span class="na">setAsyncSupported</span><span class="o">(</span><span class="n">isAsyncSupported</span><span class="o">());</span>
+
+  <span class="n">Filter</span><span class="o">[]</span> <span class="n">filters</span> <span class="o">=</span> <span class="n">getServletFilters</span><span class="o">();</span>
+  <span class="k">if</span> <span class="o">(!</span><span class="n">ObjectUtils</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">(</span><span class="n">filters</span><span class="o">))</span> <span class="o">{</span>
+    <span class="k">for</span> <span class="o">(</span><span class="n">Filter</span> <span class="n">filter</span> <span class="o">:</span> <span class="n">filters</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">registerServletFilter</span><span class="o">(</span><span class="n">servletContext</span><span class="o">,</span> <span class="n">filter</span><span class="o">);</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+
+  <span class="n">customizeRegistration</span><span class="o">(</span><span class="n">registration</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p>以上就是springmvc替代web.xml的过程</p>
+
+<h2 id="springmvcspring">3、springmvc和spring的关系</h2>
+
+<p>创建listener和servlet过程中，会创建spring容器，分别对应方法中的createRootApplicationContext()和createServletApplicationContext()</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="kd">protected</span> <span class="n">WebApplicationContext</span> <span class="nf">createRootApplicationContext</span><span class="p">(</span><span class="o">)</span> <span class="o">{</span>
+  <span class="n">Class</span><span class="o">&lt;?&gt;[]</span> <span class="n">configClasses</span> <span class="o">=</span> <span class="n">getRootConfigClasses</span><span class="o">();</span>
+  <span class="k">if</span> <span class="o">(!</span><span class="n">ObjectUtils</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">(</span><span class="n">configClasses</span><span class="o">))</span> <span class="o">{</span>
+    <span class="n">AnnotationConfigWebApplicationContext</span> <span class="n">context</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AnnotationConfigWebApplicationContext</span><span class="o">();</span>
+    <span class="n">context</span><span class="o">.</span><span class="na">register</span><span class="o">(</span><span class="n">configClasses</span><span class="o">);</span>
+    <span class="k">return</span> <span class="n">context</span><span class="o">;</span>
+  <span class="o">}</span>
+  <span class="k">else</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="kd">protected</span> <span class="n">WebApplicationContext</span> <span class="nf">createServletApplicationContext</span><span class="p">(</span><span class="o">)</span> <span class="o">{</span>
+  <span class="n">AnnotationConfigWebApplicationContext</span> <span class="n">context</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AnnotationConfigWebApplicationContext</span><span class="o">();</span>
+  <span class="n">Class</span><span class="o">&lt;?&gt;[]</span> <span class="n">configClasses</span> <span class="o">=</span> <span class="n">getServletConfigClasses</span><span class="o">();</span>
+  <span class="k">if</span> <span class="o">(!</span><span class="n">ObjectUtils</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">(</span><span class="n">configClasses</span><span class="o">))</span> <span class="o">{</span>
+    <span class="n">context</span><span class="o">.</span><span class="na">register</span><span class="o">(</span><span class="n">configClasses</span><span class="o">);</span>
+  <span class="o">}</span>
+  <span class="k">return</span> <span class="n">context</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p>getRootConfigClasses()和getServletConfigClasses()分别来自于自定义的子类</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">WebAppInitializer</span> <span class="kd">extends</span> <span class="n">AbstractAnnotationConfigDispatcherServletInitializer</span> <span class="o">{</span>
+
+  <span class="c1">//父容器</span>
+  <span class="nd">@Override</span>
+  <span class="kd">protected</span> <span class="n">Class</span><span class="o">&lt;?&gt;[]</span> <span class="n">getRootConfigClasses</span><span class="o">()</span> <span class="o">{</span>
+      <span class="k">return</span> <span class="k">new</span> <span class="n">Class</span><span class="o">&lt;?&gt;[]{</span><span class="n">SpringContainer</span><span class="o">.</span><span class="na">class</span><span class="o">};</span>
+  <span class="o">}</span>
+
+  <span class="c1">//SpringMVC配置子容器</span>
+  <span class="nd">@Override</span>
+  <span class="kd">protected</span> <span class="n">Class</span><span class="o">&lt;?&gt;[]</span> <span class="n">getServletConfigClasses</span><span class="o">()</span> <span class="o">{</span>
+      <span class="k">return</span> <span class="k">new</span> <span class="n">Class</span><span class="o">&lt;?&gt;[]{</span><span class="n">MvcContainer</span><span class="o">.</span><span class="na">class</span><span class="o">};</span>
+  <span class="o">}</span>
+
+  <span class="c1">//获取DispatcherServlet的映射信息</span>
+  <span class="nd">@Override</span>
+  <span class="kd">protected</span> <span class="n">String</span><span class="o">[]</span> <span class="n">getServletMappings</span><span class="o">()</span> <span class="o">{</span>
+      <span class="k">return</span> <span class="k">new</span> <span class="n">String</span><span class="o">[]{</span><span class="s">"/"</span><span class="o">};</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">protected</span> <span class="n">Filter</span><span class="o">[]</span> <span class="n">getServletFilters</span><span class="o">()</span> <span class="o">{</span>
+      <span class="k">return</span> <span class="kd">super</span><span class="o">.</span><span class="na">getServletFilters</span><span class="o">();</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1">//不扫描有@Controller注解的类</span>
+<span class="nd">@ComponentScan</span><span class="o">(</span><span class="n">value</span> <span class="o">=</span> <span class="s">"com.xiangxue.jack"</span><span class="o">,</span><span class="n">excludeFilters</span> <span class="o">=</span> <span class="o">{</span>
+      <span class="nd">@ComponentScan</span><span class="o">.</span><span class="na">Filter</span><span class="o">(</span><span class="n">type</span> <span class="o">=</span> <span class="n">FilterType</span><span class="o">.</span><span class="na">ANNOTATION</span><span class="o">,</span><span class="n">classes</span> <span class="o">=</span> <span class="o">{</span><span class="n">Controller</span><span class="o">.</span><span class="na">class</span><span class="o">})</span>
+<span class="o">})</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">SpringContainer</span> <span class="o">{</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nd">@ComponentScan</span><span class="o">(</span><span class="n">value</span> <span class="o">=</span> <span class="s">"com.xiangxue.jack"</span><span class="o">,</span><span class="n">includeFilters</span> <span class="o">=</span> <span class="o">{</span>
+      <span class="nd">@ComponentScan</span><span class="o">.</span><span class="na">Filter</span><span class="o">(</span><span class="n">type</span> <span class="o">=</span> <span class="n">FilterType</span><span class="o">.</span><span class="na">ANNOTATION</span><span class="o">,</span><span class="n">classes</span> <span class="o">=</span> <span class="o">{</span><span class="n">Controller</span><span class="o">.</span><span class="na">class</span><span class="o">})</span>
+<span class="o">},</span><span class="n">useDefaultFilters</span> <span class="o">=</span> <span class="kc">false</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MvcContainer</span> <span class="o">{</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p>通过AnnotationConfigWebApplicationContext类注册扫描的类来创建spring容器</p>
+
+<p>此时，只是初始化容器，但并没有走核心流程refresh来创建bean实例</p>
+
+<p>1、listener中是通过把容器上下文放入到ContextLoaderListener中，从而调用initWebApplicationContext方法来调用refresh()，由listener创建的容器是父容器。</p>
+
+<p>2、servlet中是创建DispatcherServlet放入容器上下文，然后在servlet的init方法中调用initServletBean()方法，initServletBean()方法中调用initWebApplicationContext()来调用refresh()，由servlet创建的容器是子容器。</p>
+
+<h2 id="section">4、请求响应核心流程图解</h2>
+
+<p><img src="https://pinapple.gitee.io/assets/images/2020/spring/request.png" alt="" /></p>
+
+<p>一个请求过来，会先走HttpServlet的service方法，然后判断get或者post请求，从而走doGet或者doPost方法。</p>
+
+<p>springmvc中也一样，FrameworkServlet继承了HttpServlet的service、doGet和doPost方法。</p>
+
+<p>doGet和doPost中会调用processRequest方法，processRequest方法中会调用DispatcherServlet的doService方法（实现了FrameworkServlet），最终会走到核心流程doDispatch方法。</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="kd">protected</span> <span class="kt">void</span> <span class="nf">service</span><span class="p">(</span><span class="n">HttpServletRequest</span> <span class="n">request</span><span class="o">,</span> <span class="n">HttpServletResponse</span> <span class="n">response</span><span class="o">)</span>
+    <span class="kd">throws</span> <span class="n">ServletException</span><span class="o">,</span> <span class="n">IOException</span> <span class="o">{</span>
+
+  <span class="n">HttpMethod</span> <span class="n">httpMethod</span> <span class="o">=</span> <span class="n">HttpMethod</span><span class="o">.</span><span class="na">resolve</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">getMethod</span><span class="o">());</span>
+  <span class="k">if</span> <span class="o">(</span><span class="n">httpMethod</span> <span class="o">==</span> <span class="n">HttpMethod</span><span class="o">.</span><span class="na">PATCH</span> <span class="o">||</span> <span class="n">httpMethod</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">processRequest</span><span class="o">(</span><span class="n">request</span><span class="o">,</span> <span class="n">response</span><span class="o">);</span>
+  <span class="o">}</span>
+  <span class="k">else</span> <span class="o">{</span>
+    <span class="kd">super</span><span class="o">.</span><span class="na">service</span><span class="o">(</span><span class="n">request</span><span class="o">,</span> <span class="n">response</span><span class="o">);</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+<span class="kd">protected</span> <span class="kd">final</span> <span class="kt">void</span> <span class="nf">doGet</span><span class="p">(</span><span class="n">HttpServletRequest</span> <span class="n">request</span><span class="o">,</span> <span class="n">HttpServletResponse</span> <span class="n">response</span><span class="o">)</span>
+  <span class="kd">throws</span> <span class="n">ServletException</span><span class="o">,</span> <span class="n">IOException</span> <span class="o">{</span>
+
+<span class="n">processRequest</span><span class="o">(</span><span class="n">request</span><span class="o">,</span> <span class="n">response</span><span class="o">);</span>
+<span class="o">}</span>
+<span class="kd">protected</span> <span class="kd">final</span> <span class="kt">void</span> <span class="nf">doPost</span><span class="p">(</span><span class="n">HttpServletRequest</span> <span class="n">request</span><span class="o">,</span> <span class="n">HttpServletResponse</span> <span class="n">response</span><span class="o">)</span>
+  <span class="kd">throws</span> <span class="n">ServletException</span><span class="o">,</span> <span class="n">IOException</span> <span class="o">{</span>
+
+<span class="n">processRequest</span><span class="o">(</span><span class="n">request</span><span class="o">,</span> <span class="n">response</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+
+
+            <!-- Comments -->
+            
+<div class="comments">
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+         * RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+         * LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+         */
+        /*
+         var disqus_config = function () {
+         this.page.url = PAGE_URL; // Replace PAGE_URL with your page's canonical URL variable
+         this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+         };
+         */
+        (function() { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+
+            s.src = '//my_disque_settings/embed.js';
+
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+</div>
+
+
+        </div>
+
+        <div class="col-md-4">
+            <h3>Post Directory</h3>
+<div id="post-directory-module">
+<section class="post-directory">
+    <!-- Links that trigger the jumping -->
+    <!-- Added by javascript below -->
+    <dl></dl>
+</section>
+</div>
+
+<script type="text/javascript">
+
+    $(document).ready(function(){
+        $( "article h2" ).each(function( index ) {
+            $(".post-directory dl").append("<dt><a class=\"jumper\" hre=#" +
+                    $(this).attr("id")
+                    + ">"
+                    + $(this).text()
+                    + "</a></dt>");
+
+            var children = $(this).nextUntil("h2", "h3")
+
+            children.each(function( index ) {
+                $(".post-directory dl").append("<dd><a class=\"jumper\" hre=#" +
+                        $(this).attr("id")
+                        + ">"
+                        + "&nbsp;&nbsp;- " + $(this).text()
+                        + "</a></dd>");
+            });
+        });
+
+        var fixmeTop = $('#post-directory-module').offset().top - 100;       // get initial position of the element
+
+        $(window).scroll(function() {                  // assign scroll event listener
+
+            var currentScroll = $(window).scrollTop(); // get current position
+
+            if (currentScroll >= fixmeTop) {           // apply position: fixed if you
+                $('#post-directory-module').css({      // scroll to that element or below it
+                    top: '100px',
+                    position: 'fixed',
+                    width: 'inherit'
+                });
+            } else {                                   // apply position: static
+                $('#post-directory-module').css({      // if you scroll above it
+                    position: 'inherit',
+                    width: 'inherit'
+                });
+            }
+
+        });
+
+        $("a.jumper").on("click", function( e ) {
+
+            e.preventDefault();
+
+            $("body, html").animate({
+                scrollTop: ($( $(this).attr('hre') ).offset().top - 100)
+            }, 600);
+
+        });
+    });
+
+</script>
+        </div>
+        
+
+    </div>
+
+</article>
+
+        </div>
+
+    <footer class="container">
+
+    <div class="site-footer">
+
+        <div class="copyright pull-left">
+            <!-- 请不要更改这一行 方便其他人知道模板的来源 谢谢 -->
+            <!-- Please keep this line to let others know where this theme comes from. Thank you :D -->
+            Power by <a href="https://github.com/DONGChuan/Yummy-Jekyll">Yummy Jekyll</a>
+        </div>
+
+        <a href="https://github.com/DONGChuan" target="_blank" aria-label="view source code">
+            <span class="mega-octicon octicon-mark-github" title="GitHub"></span>
+        </a>
+
+        <div class="pull-right">
+            <a href="javascript:window.scrollTo(0,0)" >TOP</a>
+        </div>
+
+    </div>
+
+    <!-- Third-Party JS -->
+    <script type="text/javascript" src="/bower_components/geopattern/js/geopattern.min.js"></script>
+
+    <!-- My JS -->
+    <script type="text/javascript" src="/assets/js/script.js"></script>
+
+    
+
+    
+    <!-- Google Analytics -->
+    <div style="display:none">
+        <script>
+            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+                        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+            })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+            ga('create', 'tracking_id', 'auto');
+            ga('send', 'pageview');
+
+        </script>
+    </div>
+    
+
+</footer>
+
+
+    </body>
+
+</html>

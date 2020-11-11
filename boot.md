@@ -5,4 +5,4 @@ subtitle: <span class="mega-octicon octicon-cloud-download"></span>&nbsp;&nbsp;s
 menu: boot
 css: ['blog-page.css']
 ---
-{% include blog-page1.html %}
+{% include boot.html %}
