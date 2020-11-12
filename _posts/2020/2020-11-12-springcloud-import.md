@@ -7,9 +7,9 @@ excerpt: springcloud整合
 keywords: 微服务
 ---
 
-##整合Spring Cloud
+## 整合Spring Cloud
 
-###加依赖
+### 加依赖
 
 选择最新版本Hoxton.SR8，type为pom，表示导入springcloud的依赖，scope为import时，仅用于dependencyManagement标签下。
 
