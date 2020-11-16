@@ -39,13 +39,13 @@ spring:
 
 ## 二、Consul的健康检查
 
-![](https://shaeros.github.io/assets/images/2020/springcloud/health.png)
+![](https://pinapple.gitee.io/assets/images/2020/springcloud/health.png)
 
 ​      如上图所示，consul会定时请求微服务给的一个路径，如果请求正常，就会标记为UP，不正常就标记为DOWN。最简单的就是编写一个端点/test，返回success，不过这种方式过于简陋，只能代表consul和微服务之间的网络是通，不代表整个微服务都是健康的并且被正常调用。
 
 ​      正确的健康检查，应该使用springboot actuator，其中的/health端点，就是用来做健康检查的。consul可以整合actuator的健康检查，如下图：
 
-![](https://shaeros.github.io/assets/images/2020/springcloud/consulhealth.png)
+![](https://pinapple.gitee.io/assets/images/2020/springcloud/consulhealth.png)
 
 ## 三、服务发现API
 
@@ -63,7 +63,7 @@ public List<ServiceInstance> testDiscovery() {
 
 启动应用，访问<http://localhost:8080/test-discovery>，得到以下信息
 
-![](https://shaeros.github.io/assets/images/2020/springcloud/discovery.png)
+![](https://pinapple.gitee.io/assets/images/2020/springcloud/discovery.png)
 
 可以看到，能获取实例的详细信息，这样就可以调用服务提供者了。
 
@@ -91,17 +91,17 @@ springcloud中的元数据为metadata，低版本的consul的元数据为tags，
 
 下图就是最新版本的consul中服务的配置项
 
-![](https://shaeros.github.io/assets/images/2020/springcloud/tagmeta.png)
+![](https://pinapple.gitee.io/assets/images/2020/springcloud/tagmeta.png)
 
 ConsulDiscoveryProperties中有两个变量，一个是tags，一个metadata，分别对应consulUI里面的值
 
-![](https://shaeros.github.io/assets/images/2020/springcloud/codemeta.png)
+![](https://pinapple.gitee.io/assets/images/2020/springcloud/codemeta.png)
 
 不过如果想获取服务提供者的元数据，必须要配置tags属性，只配置metadata属性是获取不到的。
 
 如下图，获取本身的元数据可以使用consulDiscoveryProperties.getMetadata()或者consulDiscoveryProperties.getTags()，获取服务提供者的元数据要通过ServiceInstance中的getMetadata()，虽然字面上是metadata，但其实对应的是tags的值，这是springcloud做的适配而已。
 
-![](https://shaeros.github.io/assets/images/2020/springcloud/coderobbin.png)
+![](https://pinapple.gitee.io/assets/images/2020/springcloud/coderobbin.png)
 
 ### 3、元数据的作用
 
@@ -123,7 +123,7 @@ spring:
         prefer-ip-address: true
 ```
 
-![](https://shaeros.github.io/assets/images/2020/springcloud/consulip.png)
+![](https://pinapple.gitee.io/assets/images/2020/springcloud/consulip.png)
 
 ### 2、如何指定注册到consul上的IP
 
@@ -144,7 +144,7 @@ spring:
 
 consul把instanceId作为唯一标识
 
-![](https://shaeros.github.io/assets/images/2020/springcloud/consulip.png)
+![](https://pinapple.gitee.io/assets/images/2020/springcloud/consulip.png)
 
 如图中的```ms-user-8081-192-168-1-41```就是instanceId，默认的instanceId是应用名称加端口的形式，这种在单机情况下是没问题的，如果在多机情况下，两个微服务实例端口一样的话，导致consul只能保留一个实例，所以要让不同实例有不同的instanceId
 

@@ -17,7 +17,7 @@ springboot actuator是官方出品的一个监控组件，提供开箱即用的�
 
 图中所示就是常用的一些端点，可以常用来排查问题。
 
-![](https://shaeros.github.io/assets/images/2020/springboot/actuator.png)
+![](https://pinapple.gitee.io/assets/images/2020/springboot/actuator.png)
 
 ### 3、整合Actuator
 
@@ -53,13 +53,13 @@ management:
 
 访问<http://localhost:8080/actuator/health>，返回结果如下
 
-![](https://shaeros.github.io/assets/images/2020/springboot/healthendpoint.png)
+![](https://pinapple.gitee.io/assets/images/2020/springboot/healthendpoint.png)
 
 不难发现，健康检查，不仅仅检查网络，也检查了微服务使用的资源，有磁盘、数据库、中间件等等。最终的UP是一个聚合的结果。这些检查都是自动的。
 
 ### 5、健康检查原理
 
-![](https://shaeros.github.io/assets/images/2020/springboot/healthindicator.png)
+![](https://pinapple.gitee.io/assets/images/2020/springboot/healthindicator.png)
 
 可以看到实现很多的检查，以DataSourceHealthIndicator为例，获取数据库产品名，并执行验证sql。
 
